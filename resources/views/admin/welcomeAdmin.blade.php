@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+{!! Charts::assets() !!}
 @section('content')
     <div class="container">
         <div class="row">
@@ -9,9 +9,11 @@
                         <div class="panel-body">
                             <h1 class="text-muted">Admin</h1>
                         </div>
-                        @foreach($users as $user)
-                             <a href="{{route('adminUser', ['id' => $user->id])}}" class="list-group-item">Name` {{$user->name}} Email` {{$user->email}}</a></br>
-                        @endforeach
+                        <a href="{{route('adminCreateUser')}}" class="list-group-item">Create user</a></br>
+                        <a href="{{route('adminUsers')}}" class="list-group-item">Users</a>
+                    </div>
+                    <div class="col-md-8 col-md-offset-2" style="position: absolute;top: 245px; right: 375px;">
+                        {!! $chart->render() !!}
                     </div>
                 </div>
             </div>

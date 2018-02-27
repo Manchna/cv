@@ -7,8 +7,8 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <div class="panel-body">
-                            <h1>Admin</h1>
-                            @include('__forms.admin_user_create_form')
+                            <h1 class="text-muted">Admin</h1>
+                            @include('__forms.adminUserCreateForm')
                         </div>
                     </div>
                 </div>

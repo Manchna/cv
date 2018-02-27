@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UserCreateRequest;
 use App\Http\Requests\UserUpdateRequest;
-use App\SocialProvider;
 use App\User;
-use Illuminate\Http\Request;
+use ConsoleTVs\Charts\Facades\Charts;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -17,67 +17,63 @@ class AdminController extends Controller
 
     public function index()
     {
-        return view('admin/welcome_admin');
+        $users = User::where(DB::raw("(DATE_FORMAT(created_at,'%Y'))"),date('Y'))
+            ->get();
+        $chart = Charts::database($users, 'bar', 'highcharts')
+            ->title("Monthly new Register Users")
+            ->elementLabel("Total Users")
+            ->dimensions(1000, 500)
+            ->responsive(false)
+            ->groupByMonth(date('Y'), true);
+        return view('admin/welcomeAdmin',compact('chart'));
     }
 
-
-    public function create_user()
+    public function createUser()
     {
-        return view('admin/create_user');
+        return view('admin/createUser');
     }
 
-
-    public function store(UserCreateRequest $request)
+    public function storeUser(UserCreateRequest $request)
     {
         $user = $request->all();
         $user['password'] = bcrypt($request['password']);
         User::create($user);
-
         return redirect()->route('admin');
     }
 
     public function users()
     {
         $users =User::select('id','name','email')->get();
-
         return view('admin/users')->with(['users'=>$users]);
     }
 
-    public function show($id)
+    public function showUser($id)
     {
         $user = User::findOrFail($id);
-
         return view('admin/user')->with(['user'=>$user]);
     }
 
-    public function update(UserUpdateRequest $request, $id)
+    public function updateUser(UserUpdateRequest $request, $id)
     {
-        $user_data_request = $request->all();
-        $user_data_update =User::findOrFail($id);
-
-        if ($request->only('name','email')){
-            $user_data_request = $request->only('name','email');
-            $user_data_update->update($user_data_request);
-
-            return redirect()->route('admin_user', [$id]);
+        $adminUserDataRequest = $request->all();
+        $adminUserDataUpdate =User::findOrFail($id);
+        if($adminUserDataRequest == $request->only('name','email')){
+            $adminUserDataUpdate->update($adminUserDataRequest);
+            return redirect()->route('home');
         }
-
-        if($user_data_request['password'] == null){
-            $user_data_request = $request->only('name','email');
-            $user_data_update ->update($user_data_request);
-
-            return redirect()->route('admin_user', [$id]);
+        if($adminUserDataRequest['password'] == null){
+            $adminUserDataRequest = $request->only('name','email');
+            $adminUserDataUpdate ->update($adminUserDataRequest);
+            return redirect()->route('home');
         }
-        $user_data_update->update($user_data_request);
-
-        return redirect()->route('admin_user', [$id]);
+        $adminUserDataRequest['password'] = bcrypt($request['password']);
+        $adminUserDataUpdate->update($adminUserDataRequest);
+        return redirect()->route('adminUser', [$id]);
     }
 
-
-    public function destroy($id)
+    public function destroyUser($id)
     {
        User::findOrFail($id)->delete();
-
-       return redirect()->route('admin_users');
+       return redirect()->route('adminUsers');
     }
 }

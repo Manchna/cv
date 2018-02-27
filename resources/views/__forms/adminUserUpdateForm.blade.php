@@ -1,4 +1,4 @@
-<form action="{{ route('user_update',  ['id' => $user->id] ) }}"  method="post">
+<form action="{{ route('adminUserUpdate',  ['id' => $user->id] ) }}"  method="post">
     <div class="form-group">
         <label for="name">name:</label>
         <input type="text" class="form-control"  name="name" value="{{$user->name}}" id="name">
