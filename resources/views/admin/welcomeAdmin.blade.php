@@ -10,9 +10,12 @@
                             <h1 class="text-muted">Admin</h1>
                         </div>
                         <a href="{{route('adminCreateUser')}}" class="list-group-item">Create user</a></br>
-                        <a href="{{route('adminUsers')}}" class="list-group-item">Users</a>
+                        <a href="{{route('adminUsers')}}" class="list-group-item">Users</a></br>
+                        <a href="{{route('adminCreateProfession')}}" class="list-group-item">Create profession for cv</a></br>
+                        <a href="{{route('adminCreateQuestion')}}" class="list-group-item">Create questions for cv</a></br>
+
                     </div>
-                    <div class="col-md-8 col-md-offset-2" style="position: absolute;top: 245px; right: 375px;">
+                    <div class="col-md-8 col-md-offset-2" >
                         {!! $chart->render() !!}
                     </div>
                 </div>

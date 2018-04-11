@@ -41,7 +41,8 @@ class User extends Authenticatable
     function socialProviders(){
         return $this->hasMany('App\SocialProvider');
     }
-
-
+    function answer(){
+        return $this->hasMany('App\Answer');
+    }
 
 }

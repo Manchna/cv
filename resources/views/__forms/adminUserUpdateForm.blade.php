@@ -1,19 +1,19 @@
-<form action="{{ route('adminUserUpdate',  ['id' => $user->id] ) }}"  method="post">
+<form action="{{ route('adminUserUpdate',  ['id' => $data['user']->id] ) }}"  method="post">
     <div class="form-group">
         <label for="name">name:</label>
-        <input type="text" class="form-control"  name="name" value="{{$user->name}}" id="name">
+        <input type="text" class="form-control"  name="name" value="{{$data['user']->name}}" id="name">
         @if ($errors->has('name'))
             <p class="text-danger">{{ $errors->first('name') }}</p>
         @endif
     </div>
     <div class="form-group">
         <label for="title">email:</label>
-        <input type="text" class="form-control"  name="email" value="{{$user->email}}" id="email">
+        <input type="text" class="form-control"  name="email" value="{{$data['user']->email}}" id="email">
         @if ($errors->has('email'))
             <p class="text-danger">{{ $errors->first('email') }}</p>
         @endif
     </div>
-    @if($user->password != "")
+    @if($data['user']->password != "")
         <div class="form-group">
             <label for="title">Password:</label>
             <input type="password" class="form-control"  name="password"  id="password">

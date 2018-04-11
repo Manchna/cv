@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateSocialProvidersTable extends Migration
+class CreateAnswersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,14 @@ class CreateSocialProvidersTable extends Migration
      */
     public function up()
     {
-        Schema::create('social_providers', function (Blueprint $table) {
+        Schema::create('answers', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('text');
             $table->integer('user_id')->unsigned();
-            $table->string('provider_id');
-            $table->string('provider');
+            $table->integer('question_id')->unsigned()->nullable();
             $table->timestamps();
-        });
-        Schema::table('social_providers', function($table) {
+
+            $table->foreign('question_id')->references('id')->on('questions')->onUpdate('cascade')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
@@ -32,6 +32,6 @@ class CreateSocialProvidersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('social_providers');
+        Schema::dropIfExists('answers');
     }
 }
