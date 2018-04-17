@@ -2,25 +2,33 @@
 
 namespace App\Http\Controllers\Admin;
 
-
-
-use App\Answer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserCreateRequest;
 use App\Http\Requests\UserUpdateRequest;
-use App\Question;
-use App\User;
+use App\Repositories\Admin\Answer\AnswerInterface as AnswerInterface;
+use App\Repositories\Admin\Question\QuestionInterface as QuestionInterface;
+use App\Repositories\Admin\User\UserInterface as UserInterface;
 use ConsoleTVs\Charts\Facades\Charts;
 use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
 
+    private $userRepo;
+    private $answerRepo;
+    private $questionRepo;
+
+    public function __construct(UserInterface $userRepo, AnswerInterface $answerRepo, QuestionInterface $questionRepo)
+    {
+        $this->userRepo = $userRepo;
+        $this->answerRepo = $answerRepo;
+        $this->questionRepo = $questionRepo;
+    }
+
     public function index()
     {
-        $users = User::where(DB::raw("(DATE_FORMAT(created_at,'%Y'))"),date('Y'))
-            ->get();
-        $chart = Charts::database($users, 'bar', 'highcharts')
+        $data = DB::raw("(DATE_FORMAT(created_at,'%Y'))");
+        $chart = Charts::database($this->userRepo->whereForCharts($data), 'bar', 'highcharts')
             ->title("Monthly new Register Users")
             ->elementLabel("Total Users")
             ->dimensions(500, 250)
@@ -38,54 +46,55 @@ class AdminController extends Controller
     {
         $user = $request->all();
         $user['password'] = bcrypt($request['password']);
-        User::create($user);
+        $this->userRepo->create($user);
         return redirect()->route('admin');
     }
 
     public function users()
     {
-        $users =User::select('id','name','email')->get();
+        $data['id'] = 'id';
+        $data['name'] = 'name';
+        $data['email'] = 'email';
+
+        $users = $this->userRepo->select($data);
         return view('admin/users')->with(['users'=>$users]);
     }
 
     public function showUser($id)
     {
-        $user = User::findOrFail($id);
-        $data['user' ]= $user;
-        $userAnswers = Answer::where('user_id', $id)->get();
-        $data['answers']=$userAnswers;
-        $data['questions'] = Question::get();
+        $data['user'] = $this->userRepo->find($id);
+        $data['answers']=$this->answerRepo->getOne($id);
+        $data['questions'] = $this->questionRepo->get();
 
         return view('admin/user')->with(['data'=>$data]);
     }
 
     public function updateUser(UserUpdateRequest $request, $id)
     {
-        $adminUserDataRequest = $request->all();
-        $adminUserDataUpdate =User::findOrFail($id);
-        if($adminUserDataRequest === $request->only('name', 'email', '_token')){
-            $adminUserDataUpdate->update($adminUserDataRequest);
+        $data = $request->all();
+        if ($data == $request->only('name', 'email', '_token')) {
+            $this->userRepo->update( $data, $id);
             return redirect()->route('adminUser', [$id]);
         }
-        if($adminUserDataRequest['password'] == ""){
-            $adminUserDataRequest = $request->only('name','email');
-            $adminUserDataUpdate ->update($adminUserDataRequest);
+        if ($data['password'] == null) {
+            $data = $request->only('name', 'email');
+            $this->userRepo->update($data, $id);
             return redirect()->route('adminUser', [$id]);
         }
-        $adminUserDataRequest['password'] = bcrypt($request['password']);
-        $adminUserDataUpdate->update($adminUserDataRequest);
+        $data['password'] = bcrypt($request['password']);
+        $this->userRepo->update($data, $id);
         return redirect()->route('adminUser', [$id]);
     }
 
     public function destroyUser($id)
     {
-       User::findOrFail($id)->delete();
+        $this->userRepo->delete($id);
        return redirect()->route('adminUsers');
     }
 
     public function pdfView($id , $download){
-        $answers = Answer::where('user_id', $id)->get();
 
+        $answers = $this->answerRepo->getOne($id);
         $answerText = '';
         foreach ($answers as $key => $answer) {
             $profession = $answer->question->profession;

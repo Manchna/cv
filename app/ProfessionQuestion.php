@@ -12,4 +12,8 @@ class ProfessionQuestion extends Model
         'question_id',
         'profession_id'
     ];
+
+    public function insertProfessionQuestion($data){
+        return parent::insert($data);
+    }
 }

@@ -2,27 +2,31 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Answer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserAnswerRequest;
+use App\Repositories\Admin\Answer\AnswerInterface as AnswerInterface;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
 
 class AnswerController extends Controller
 {
+    private $answerRepo;
+
+    public function __construct(AnswerInterface $answerRepo)
+    {
+        $this->answerRepo = $answerRepo;
+    }
 
     public function update(UserAnswerRequest $request, $id)
     {
         $answers = $request->get('answer');
-        $userId = $id;
+        $userId=$id;
         $now = Carbon::now();
-
+        $data = [];
         foreach ($answers as $key => $answer) {
-
-            Answer::where('user_id', $userId)->where('question_id', $key)->update([
-                'text' => $answer,
-                'updated_at' => $now
-            ]);
+            $data['text'] = $answer;
+            $data['updated_at'] = $now;
+            $this->answerRepo->getOneForUpdate($userId, $key);
+            $this->answerRepo->update($data, $userId, $key);
         }
         return redirect()->route('adminUser',['id'=>$userId]);
     }

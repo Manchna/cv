@@ -9,23 +9,44 @@ class User extends Authenticatable
 {
     use Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'name', 'email', 'password', 'role',
     ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    public function CreateUser($data)
+    {
+        return static::create($data);
+    }
+
+     public function selectUser($data)
+    {
+        return static::select($data)->get();
+    }
+
+     public function findOrFailUser($id)
+    {
+        return static::findOrFail($id);
+    }
+
+    public function updateUser(array $data, $id)
+    {
+        return static::find($id)->update($data);
+    }
+
+    public function deleteUser($id)
+    {
+        return static::find($id)->delete();
+    }
+   public function whereForChartsUser($data)
+    {
+        return static::where($data,date('Y'))->get();
+    }
+
+
 
     public function isAdmin()
     {
@@ -35,7 +56,6 @@ class User extends Authenticatable
         else{
             return false;
         }
-        // this looks for an admin column in your users table
     }
 
     function socialProviders(){

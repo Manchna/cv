@@ -2,15 +2,21 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Answer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserAnswerRequest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use App\Repositories\User\Answer\AnswerInterface as AnswerInterface ;
+
 
 class AnswerController extends Controller
 {
+    private $answerRepo;
 
+    public function __construct(AnswerInterface $answerRepo)
+    {
+        $this->answerRepo = $answerRepo;
+    }
     public function store(UserAnswerRequest $request)
     {
 
@@ -28,27 +34,22 @@ class AnswerController extends Controller
                 'updated_at' => $now
             ];
         }
-
-        Answer::insert($data);
-
+        $this->answerRepo->insert($data);
         return redirect()->route('home');
     }
 
     public function update(UserAnswerRequest $request)
     {
         $answers = $request->get('answer');
-        $userId = Auth::user()->id;
+        $userId=Auth::user()->id;
         $now = Carbon::now();
-
-
+        $data = [];
         foreach ($answers as $key => $answer) {
-
-            Answer::where('user_id', $userId)->where('question_id', $key)->update([
-                'text' => $answer,
-                'updated_at' => $now
-            ]);
+            $data['text'] = $answer;
+            $data['updated_at'] = $now;
+            $this->answerRepo->getOneForUpdate($userId, $key);
+            $this->answerRepo->update($data, $userId, $key);
         }
-
         return redirect()->route('home');
     }
 }

@@ -10,6 +10,15 @@ class Question extends Model
         'text', 'profession_id',
     ];
 
+    public function getQuestion()
+    {
+        return parent::get();
+    }
+    public function createQuestion($data)
+    {
+        return parent::create($data);
+    }
+
     function profession(){
         return $this->belongsToMany('App\Profession', 'profession_question',
             'question_id', 'profession_id');

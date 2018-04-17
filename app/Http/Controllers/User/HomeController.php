@@ -2,59 +2,67 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Answer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserUpdateRequest;
-use App\Profession;
-use App\User;
 use Illuminate\Support\Facades\Auth;
-
 use PDF;
+use App\Repositories\User\UserInterface as UserInterface;
+use App\Repositories\User\Answer\AnswerInterface as AnswerInterface ;
+use App\Repositories\User\Profession\ProfessionInterface as ProfessionInterface ;
 
 class HomeController extends Controller
 {
+    private $userRepo;
+    private $answerRepo;
+    private $professionRepo;
+
+
+    public function __construct(UserInterface $userRepo, AnswerInterface $answerRepo, ProfessionInterface $professionRepo)
+    {
+        $this->userRepo = $userRepo;
+        $this->answerRepo = $answerRepo;
+        $this->professionRepo = $professionRepo;
+    }
 
     public function index()
     {
         if (Auth::user()->isAdmin()) {
             return redirect()->route('admin');
         }
-        $userId = Auth::user()->id;
-        $answers = Answer::where('user_id', $userId)->get();
-        $data['answers'] = $answers;
+        $data['answers'] = $this->answerRepo->getone(Auth::user()->id);
         $data['user'] = Auth::user();
-        $data['name'] = Profession::get();
+        $data['name'] = $this->professionRepo->getAll();
 
         return view('user/home')->with(['data' => $data]);
     }
 
     public function update(UserUpdateRequest $request, $id)
     {
-        $userDataRequest = $request->all();
-        $userDataUpdate = User::findOrFail($id);
-        if ($userDataRequest == $request->only('name', 'email', '_token')) {
-            $userDataUpdate->update($userDataRequest);
+        $data = $request->all();
+        if ($data == $request->only('name', 'email', '_token')) {
+            $this->userRepo->update( $data, $id);
             return redirect()->route('home');
         }
-        if ($userDataRequest['password'] == null) {
-            $userDataRequest = $request->only('name', 'email');
-            $userDataUpdate->update($userDataRequest);
+        if ($data['password'] == null) {
+            $data = $request->only('name', 'email');
+            $this->userRepo->update($data, $id);
             return redirect()->route('home');
         }
-        $userDataRequest['password'] = bcrypt($request['password']);
-        $userDataUpdate->update($userDataRequest);
+        $data['password'] = bcrypt($request['password']);
+        $this->userRepo->update($data, $id);
         return redirect()->route('home');
     }
 
     public function destroy($id)
     {
-        User::findOrFail($id)->delete();
+        $this->userRepo->delete($id);
         return redirect()->route('welcome');
     }
 
     public function pdfView($id ,$download)
     {
-        $answers = Answer::where('user_id', $id)->get();
+        $answers = $this->answerRepo->getone($id);
+
 
         $answerText = '';
         foreach ($answers as $key => $answer) {
@@ -73,8 +81,5 @@ class HomeController extends Controller
         }
         return $pdf->stream();
     }
-
-
-
 }
 

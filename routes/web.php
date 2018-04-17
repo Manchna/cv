@@ -19,6 +19,7 @@ Route::group(['prefix' => '/auth'], function () {
 Route::group(['prefix' => '/user','middleware' => 'auth'], function () {
     Route::post('/update/{id}', 'User\HomeController@update')->name('userUpdate');
     Route::get('/delete/{id}', 'User\HomeController@destroy')->name('userDelete');
+    Route::get('/asa', 'User\AnswerController@asa')->name('asa');
     Route::get('/create/profession', 'User\ProfessionController@create')->name('userCreateProfession');
     Route::post('/send/cv', 'User\AnswerController@store')->name('cvCreate');
     Route::post('/cv/update', 'User\AnswerController@update')->name('cvUpdate');
@@ -29,7 +30,6 @@ Route::group(['prefix' => '/user','middleware' => 'auth'], function () {
 //for admin
 Route::group(['prefix' => '/admin','middleware' => 'admin'], function () {
     Route::get('/', 'Admin\AdminController@index')->name('admin');
-
     Route::get('/create/user', 'Admin\AdminController@createUser')->name('adminCreateUser');
     Route::post('/send/user', 'Admin\AdminController@storeUser')->name('adminSendUser');
     Route::get('/users', 'Admin\AdminController@users')->name('adminUsers');
@@ -42,6 +42,5 @@ Route::group(['prefix' => '/admin','middleware' => 'admin'], function () {
     Route::post('/send/questions', 'Admin\QuestionController@store')->name('adminSendQuestion');
     Route::post('/cv/update/{id}', 'Admin\AnswerController@update')->name('adminCvUpdate');
     Route::get('/pdf/view/{id}/{download}', 'Admin\AdminController@pdfView')->name('adminPdfView');
-
 });
 
